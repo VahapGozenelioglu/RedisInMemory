@@ -15,12 +15,22 @@ public class ProductController : Controller
 
     public IActionResult Index()
     {
-        _memoryCache.Set<string>("time", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        if (!_memoryCache.TryGetValue("time", out string? cachedTime))
+        {
+            _memoryCache.Set("time", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        }
         return View();
     }
+    
 
     public IActionResult Show()
     {
+        _memoryCache.GetOrCreate<string>("time", _ =>
+        {
+            _.Priority = CacheItemPriority.High;
+            return DateTime.Now.ToString(CultureInfo.InvariantCulture);
+        });
+        
         ViewBag.time = _memoryCache.Get<string>("time");
         return View();
     }
