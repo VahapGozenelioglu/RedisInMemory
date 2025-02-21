@@ -17,7 +17,11 @@ public class ProductController : Controller
     {
         if (!_memoryCache.TryGetValue("time", out string? cachedTime))
         {
-            _memoryCache.Set("time", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+            MemoryCacheEntryOptions options = new()
+            {
+                AbsoluteExpiration = DateTime.Now.AddSeconds(20)
+            };
+            _memoryCache.Set("time", DateTime.Now.ToString(CultureInfo.InvariantCulture), options);
         }
         return View();
     }
@@ -25,13 +29,9 @@ public class ProductController : Controller
 
     public IActionResult Show()
     {
-        _memoryCache.GetOrCreate<string>("time", _ =>
-        {
-            _.Priority = CacheItemPriority.High;
-            return DateTime.Now.ToString(CultureInfo.InvariantCulture);
-        });
+        _memoryCache.TryGetValue("time", out string? cachedTime);
+        ViewBag.time = cachedTime;
         
-        ViewBag.time = _memoryCache.Get<string>("time");
         return View();
     }
 }
