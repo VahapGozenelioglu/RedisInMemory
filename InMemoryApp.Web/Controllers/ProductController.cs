@@ -19,9 +19,18 @@ public class ProductController : Controller
         {
             MemoryCacheEntryOptions options = new()
             {
-                AbsoluteExpiration = DateTime.Now.AddMinutes(1),
-                SlidingExpiration = TimeSpan.FromSeconds(10),
-                Priority = CacheItemPriority.High
+                AbsoluteExpiration = DateTime.Now.AddSeconds(10),
+                Priority = CacheItemPriority.High,
+                PostEvictionCallbacks =
+                {
+                    new PostEvictionCallbackRegistration()
+                    {
+                        EvictionCallback = (key, value, reason, state) =>
+                        {
+                            _memoryCache.Set("callback", $"{key} with value : {value} is deleted. Reason: {reason}");
+                        }
+                    }
+                }
             };
             _memoryCache.Set("time", DateTime.Now.ToString(CultureInfo.InvariantCulture), options);
         }
@@ -32,7 +41,9 @@ public class ProductController : Controller
     public IActionResult Show()
     {
         _memoryCache.TryGetValue("time", out string? cachedTime);
+        _memoryCache.TryGetValue("callback", out string? callback);
         ViewBag.time = cachedTime;
+        ViewBag.callback = callback;
         
         return View();
     }
