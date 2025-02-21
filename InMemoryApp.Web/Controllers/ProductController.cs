@@ -19,7 +19,8 @@ public class ProductController : Controller
         {
             MemoryCacheEntryOptions options = new()
             {
-                AbsoluteExpiration = DateTime.Now.AddSeconds(20)
+                AbsoluteExpiration = DateTime.Now.AddMinutes(1),
+                SlidingExpiration = TimeSpan.FromSeconds(10)
             };
             _memoryCache.Set("time", DateTime.Now.ToString(CultureInfo.InvariantCulture), options);
         }
